@@ -1,6 +1,16 @@
 {
   "name": "Fields2Cover-devcontainer",
-  "build": { "dockerfile": "Dockerfile" },
+  
+  "build": { "dockerfile": "ros2.dockerfile", "context": ".."},
+  
   "features": {
-  }
+  },
+  
+  "runArgs": [
+    "--network=host"
+  ],
+
+  "workspaceMount": "source=${localWorkspaceFolder}/ros2_ws,target=/home/user/ros2_ws,type=bind",
+  "workspaceFolder": "/home/user/ros2_ws"
+
 }
