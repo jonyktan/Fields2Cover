@@ -1,0 +1,9 @@
+# Request
+nav_msgs/Path polygon
+string method
+---
+# Result
+geometry_msgs/PoseStamped path
+---
+# Feedback
+uint8 percent_completion
