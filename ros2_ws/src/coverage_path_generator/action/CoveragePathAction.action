@@ -1,9 +1,30 @@
 # Request
-nav_msgs/Path polygon
-string method
+## Robot parameters
+float32 robot_width_m 
+float32 robot_operational_width_m
+float32 robot_min_turning_radius_m 
+float32 robot_max_diff_curv_m 
+float32 robot_cruise_velocity_ms
+float32 robot_turn_velocity_ms
+
+## Field parameters
+## TODO
+
+## Swath generation objective function
+string swath_objective # swath_length / num_swath / custom_angle
+float32 custom_angle_rad # Custom angle in radians
+
+## Route planning pattern
+string route_pattern # boustrophedon / snake / spiral / custom_order
+uint8[] custom_order # Custom ordered list of swath indices (len(custom_order) = len(swaths))
+
+## Path planning curve type
+string path_turns_type # dubins / dubins_continuous / reeds_shepp / reeds_shepp_continuous
+
 ---
 # Result
 geometry_msgs/PoseStamped path
+
 ---
 # Feedback
-uint8 percent_completion
+string feedback_msg
