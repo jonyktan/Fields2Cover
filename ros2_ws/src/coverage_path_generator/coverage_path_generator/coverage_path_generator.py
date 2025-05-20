@@ -5,8 +5,8 @@ from rclpy.action import ActionServer, CancelResponse
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 
-import action
-from action import CoveragePathAction
+# from coverage_path_generator.action import CoveragePathAction
+from custom_interfaces.action import CoveragePathAction
 
 import fields2cover as f2c
 
@@ -35,16 +35,20 @@ class CoveragePathGenerator(Node):
         """Callback upon receipt of request at action topic."""
         
         # Create robot
-        robot = f2c.Robot(goal_handle.robot_width_m, goal_handle.robot_operational_width_m)
-        robot.setMinTurningRadius(goal_handle.robot_min_turning_radius_m)
-        robot.setCruiseVel(goal_handle.robot_cruise_velocity_ms)
-        robot.setTurnVel(goal_handle.robot_turn_velocity_ms)
+        request = goal_handle.request
+        robot = f2c.Robot(request.robot_width_m, request.robot_operational_width_m)
+        robot.setMinTurningRadius(request.robot_min_turning_radius_m)
+        robot.setCruiseVel(request.robot_cruise_velocity_ms)
+        robot.setTurnVel(request.robot_turn_velocity_ms)
         # TODO: (?) Print out selected param values
 
-        # Get field from xml
-        field = f2c.Parser().importFieldGml(DATA_PATH + "test1.xml") # TODO: Update this to get field from request
+        # # Get field from xml
+        # field = f2c.Parser().importFieldGml(DATA_PATH + "test1.xml") # TODO: Update this to get field from request
+        field = [{"x": 10, "y": 10}, {"x": 10, "y": 50}, {"x": 90, "y": 50}, {"x": 90, "y": 10}]
         # Transform to UTM
-        f2c.Transform.transformToUTM(field)
+        # f2c.Transform.transformToUTM(field)
+        f2c.Field.getField(field)
+
 
         # TODO: Decompose field if more efficient (https://fields2cover.github.io/source/tutorials/decomposition.html)
         
@@ -61,19 +65,19 @@ class CoveragePathGenerator(Node):
         # route_planner.setStartAndEndPoint()
 
         # Set objective function for swath generation (https://fields2cover.github.io/source/tutorials/swath_generator.html)
-        match goal_handle.request.swath_objective:
+        match request.swath_objective:
             case "swath_length":
                 swath_obj = f2c.OBJ_SwathLength()
             case "num_swath":
                 swath_obj = f2c.OBJ_NSwath()
             case "custom_angle":
-                swath_obj = goal_handle.request.custom_angle_rad # e.g. math.pi
+                swath_obj = request.custom_angle_rad # e.g. math.pi
         # Generate swaths using brute force method
         bf_sw_gen = f2c.SG_BruteForce()
         swaths = bf_sw_gen.generateBestSwaths(swath_obj, robot.getCovWidth(), no_hl.getGeometry(0))
 
         # Set pattern for route planning (https://fields2cover.github.io/source/tutorials/route_planning.html)
-        match goal_handle.request.route_pattern:
+        match request.route_pattern:
             case "boustrophedon":
                 swath_sorter = f2c.RP_Boustrophedon()
             case "snake":
@@ -81,13 +85,13 @@ class CoveragePathGenerator(Node):
             case "spiral":
                 swath_sorter = f2c.RP_Spiral()
             case "custom_order":
-                swath_sorter = f2c.RP_CustomOrder(goal_handle.request.custom_order)
+                swath_sorter = f2c.RP_CustomOrder(request.custom_order)
         # Generate route using pattern
         swaths = swath_sorter.genSortedSwaths(swaths)
         
         # Set curve type for path planning (https://fields2cover.github.io/source/tutorials/path_planning.html)
         path_planner = f2c.PP_PathPlanning()
-        match goal_handle.request.path_turns_type:
+        match request.path_turns_type:
             case "dubins":
                 path_arg = f2c.PP_DubinsCurves()
             case "dubins_continuous":

@@ -9,6 +9,7 @@ float32 robot_turn_velocity_ms
 
 ## Field parameters
 ## TODO
+polygon_msgs/Point2D[] field
 
 ## Swath generation objective function
 string swath_objective # swath_length / num_swath / custom_angle
@@ -23,7 +24,7 @@ string path_turns_type # dubins / dubins_continuous / reeds_shepp / reeds_shepp_
 
 ---
 # Result
-geometry_msgs/PoseStamped path
+nav_msgs/Path nav_path
 
 ---
 # Feedback
